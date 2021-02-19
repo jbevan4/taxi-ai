@@ -1,45 +1,24 @@
+import random
 from time import sleep
-from IPython.display import clear_output
 import gym
-
-env = gym.make("Taxi-v3").env
-
-env.s = 328  # set environment to illustration's state
-
-epochs = 0
-penalties, reward = 0, 0
-
-frames = []  # for animation
-
-done = False
-
-while not done:
-    action = env.action_space.sample()
-    state, reward, done, info = env.step(action)
-
-    if reward == -10:
-        penalties += 1
-
-    # Put each rendered frame into dict for animation
-    frames.append({
-        'frame': env.render(mode='ansi'),
-        'state': state,
-        'action': action,
-        'reward': reward
-    }
-    )
-
-    epochs += 1
+import numpy as np
+import os
 
 
-print("Timesteps taken: {}".format(epochs))
-print("Penalties incurred: {}".format(penalties))
+def clear():
+    return os.system('clear')
 
 
-def print_frames(frames):
+def initialise_world():
+    env = gym.make("Taxi-v3").env
+    return env, np.zeros([env.observation_space.n, env.action_space.n])
+
+
+def print_frames(frames, episode_number):
     for i, frame in enumerate(frames):
-        clear_output(wait=True)
+        clear()
         print(frame['frame'])
+        print(f"Episode: {episode_number}")
         print(f"Timestep: {i + 1}")
         print(f"State: {frame['state']}")
         print(f"Action: {frame['action']}")
@@ -47,4 +26,57 @@ def print_frames(frames):
         sleep(.1)
 
 
-print_frames(frames)
+def train_model(env, q_table):
+    episode_results = []
+    alpha = 0.1
+    gamma = 0.6
+    epsilon = 0.1
+
+    for i in range(1001):
+        state = env.reset()
+        frames = []
+        epochs, penalties, reward, = 0, 0, 0
+        done = False
+
+        while not done:
+            if random.uniform(0, 1) < epsilon:
+                action = env.action_space.sample()  # Explore action space
+            else:
+                action = np.argmax(q_table[state])  # Exploit learned values
+
+            next_state, reward, done, info = env.step(action)
+
+            old_value = q_table[state, action]
+            next_max = np.max(q_table[next_state])
+
+            new_value = (1 - alpha) * old_value + alpha * \
+                (reward + gamma * next_max)
+            q_table[state, action] = new_value
+
+            if reward == -10:
+                penalties += 1
+
+            frames.append({
+                'frame': env.render(mode='ansi'),
+                'state': state,
+                'action': action,
+                'reward': reward
+            }
+            )
+
+            state = next_state
+            epochs += 1
+
+        if i % 100 == 0 or i == 0:
+            episode_results.append({'epochs': epochs,
+                                    'frames': frames, 'penalties': penalties,
+                                    'episode_number': i})
+            print(f"Episode {i}")
+    return episode_results
+
+
+if __name__ == "__main__":
+    env, q_table = initialise_world()
+    results = train_model(env, q_table)
+    for episode in results:
+        print_frames(episode.get("frames"), episode.get("episode_number"))
