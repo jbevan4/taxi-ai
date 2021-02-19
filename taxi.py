@@ -35,7 +35,7 @@ def train_model(env, q_table):
     for i in range(1001):
         state = env.reset()
         frames = []
-        epochs, penalties, reward, = 0, 0, 0
+        epochs, penalties, reward = 0, 0, 0
         done = False
 
         while not done:
@@ -44,7 +44,7 @@ def train_model(env, q_table):
             else:
                 action = np.argmax(q_table[state])  # Exploit learned values
 
-            next_state, reward, done, info = env.step(action)
+            next_state, reward, done, _ = env.step(action)
 
             old_value = q_table[state, action]
             next_max = np.max(q_table[next_state])
