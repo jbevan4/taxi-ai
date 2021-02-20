@@ -6,7 +6,7 @@ import os
 
 
 def clear():
-    return os.system('clear')
+    os.system('clear')
 
 
 def initialise_world():
@@ -19,7 +19,7 @@ def print_frames(frames, episode_number):
         clear()
         print(frame['frame'])
         print(f"Episode: {episode_number}")
-        print(f"Timestep: {i + 1}")
+        print(f"Timestep: {i}")
         print(f"State: {frame['state']}")
         print(f"Action: {frame['action']}")
         print(f"Reward: {frame['reward']}")
@@ -28,9 +28,7 @@ def print_frames(frames, episode_number):
 
 def train_model(env, q_table):
     episode_results = []
-    alpha = 0.1
-    gamma = 0.6
-    epsilon = 0.1
+    alpha, gamma, epsilon = 0.1, 0.6, 0.1
 
     for i in range(1001):
         state = env.reset()
@@ -39,10 +37,8 @@ def train_model(env, q_table):
         done = False
 
         while not done:
-            if random.uniform(0, 1) < epsilon:
-                action = env.action_space.sample()  # Explore action space
-            else:
-                action = np.argmax(q_table[state])  # Exploit learned values
+            action = env.action_space.sample() if random.uniform(
+                0, 1) < epsilon else np.argmax(q_table[state])
 
             next_state, reward, done, _ = env.step(action)
 
