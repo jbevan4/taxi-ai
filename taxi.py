@@ -26,7 +26,7 @@ def print_frames(frames, episode_number):
         sleep(.1)
 
 
-def train_model(env, q_table):
+def play_game(env, q_table):
     episode_results = []
     alpha, gamma, epsilon = 0.1, 0.6, 0.1
 
@@ -73,6 +73,6 @@ def train_model(env, q_table):
 
 if __name__ == "__main__":
     env, q_table = initialise_world()
-    results = train_model(env, q_table)
+    results = play_game(env, q_table)
     for episode in results:
         print_frames(episode.get("frames"), episode.get("episode_number"))
