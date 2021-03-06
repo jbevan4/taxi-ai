@@ -6,7 +6,8 @@ import os
 
 
 def clear():
-    os.system('clear')
+    # TODO: investigate this magic
+    print("\033[H\033[J")
 
 
 def initialise_world():
@@ -27,11 +28,10 @@ def print_frames(frames, episode_number):
 
 
 def play_game(env, q_table):
-    clear()
     episode_results = []
     alpha, gamma, epsilon = 0.1, 0.6, 0.1
 
-    for i in range(1001):
+    for i in range(2001):
         state = env.reset()
         frames = []
         epochs, penalties, reward = 0, 0, 0
@@ -74,6 +74,7 @@ def play_game(env, q_table):
 
 if __name__ == "__main__":
     env, q_table = initialise_world()
+    clear()
     results = play_game(env, q_table)
     for episode in results:
         print_frames(episode.get("frames"), episode.get("episode_number"))
